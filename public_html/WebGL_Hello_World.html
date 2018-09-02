@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        
+        <script id="vFBshader" type="notjs">
+            attribute vec2 a_position;
+            attribute vec2 a_texture;
+            varying vec2 v_texCoord;
+            varying vec2 v_pos;
+            
+            void main()
+            {
+                v_texCoord = a_texture;
+                v_pos = a_position.xy;
+                gl_Position = vec4(v_pos, 0.0, 1.0);
+                
+            }
+        </script>
+        
+        <script id="fFBshader" type="notjs">
+            
+            precision mediump float;
+            uniform sampler2D u_image;
+//            uniform vec2 u_mousePos;
+            varying vec2 v_pos;
+            varying vec2 v_texCoord;
+            
+            void main()
+            {
+                
+                vec4 texColor = texture2D(u_image, v_texCoord);
+                texColor.x += .01;
+                texColor.y -= .01;
+                if(texColor.x > texColor.y){
+//                    texColor.x = 1.0 - texColor.x;
+//                    texColor.y -= .82;
+                }
+                
+//                if(texColor.x > texColor.z){
+//                    texColor.z += .01;
+//                }
+//                
+                gl_FragColor = texColor;
+                
+              //  vec4 texColor = texture2D(u_image, v_texCoord);
+//                vec2 distVec = u_mousePos - v_pos;
+//                float dist = sqrt(pow(distVec.x, 2.0) + pow(distVec.y, 2.0));
+//                if(dist < .020){
+//                    gl_FragColor = mix(vec4(.455, .123, .22, 1.0), vec4(vec2(texture2D(u_image, v_texCoord)),0.0, 1.0), .23);
+//                }
+//                else{
+//                    gl_FragColor = mix(vec4(0.0, 0.0, 0.0, 1.0),   vec4(vec2(texture2D(u_image, v_texCoord)),.55, 1.0), .77);
+//                }
+                
+//                 if(v_pos.y > 0.0){
+//                    gl_FragColor.x = 0.0;
+//                }
+//                else{
+//                    gl_FragColor.x = 0.5;
+//                }
+//                
+//                if(v_pos.y < 0.5){
+//                    gl_FragColor.x = .50;
+//                }
+//                
+            }
+        </script>
+        
+        <script id="2d-vertex-shader" type="notjs">
+            // an attribute will rece ive data from a buffer 
+            attribute vec2 a_position;
+            attribute vec3 a_colors;
+            attribute vec2 a_texture;
+            
+            varying vec2 v_texCoord;
+            
+            void main() {
+                v_texCoord = a_texture;
+                gl_Position = vec4(a_position.xy, 0.0, 1.0);
+                }
+        </script>
+        
+        
+        <script id="2d-fragment-shader" type="notjs">
+            
+            precision mediump float;
+            uniform sampler2D u_image;
+            uniform vec2 u_mousePos;
+            uniform float u_counterVal;
+            varying vec2 v_texCoord;
+            
+            
+            void main(){
+                float tX = v_texCoord.x;
+                float tY = v_texCoord.y;
+//                float blurVal = .002777;
+                float blurVal = u_counterVal;
+                float mixVal = 0.0;
+                
+                vec4 texColor       =   texture2D(u_image, v_texCoord);
+                vec4 texColorm10    =   texture2D(u_image, vec2(tX-blurVal, tY));
+                vec4 texColor10     =   texture2D(u_image, vec2(tX+blurVal, tY));
+                vec4 texColor01     =   texture2D(u_image, vec2(tX, tY+blurVal));
+                vec4 texColor0m1    =   texture2D(u_image, vec2(tX, tY-blurVal));
+                vec4 texColorm11    =   texture2D(u_image, vec2(tX-blurVal, tY+blurVal));
+                vec4 texColor11     =   texture2D(u_image, vec2(tX+blurVal, tY+blurVal));
+                vec4 texColorm1m1   =   texture2D(u_image, vec2(tX -blurVal, tY-blurVal));
+                vec4 texColor1m1    =   texture2D(u_image, vec2(tX+blurVal, tY-blurVal));
+                
+//--------------------box blur begin--------------------
+//                vec4 avgVec = texColor + texColorm10 + texColor10 + texColor01 +
+//                        texColor0m1 + texColorm11 + texColor11 + texColorm1m1 + texColor1m1;
+//                avgVec = avgVec / 9.0;
+//--------------------box blur end----------------------
+//--------------------gaussian blur begin--------------------
+                vec4 avgVec = (4.0 *texColor) + (2.0*texColorm10) + (2.0*texColor10) + (2.0*texColor01) +
+                        (2.0*texColor0m1) + texColorm11 + texColor11 + texColorm1m1 + texColor1m1;
+                avgVec = avgVec / 16.0;
+//--------------------gaussian blur end----------------------
+
+
+
+                texColor = avgVec;
+//                texColor = blurMix(texColor, texColorm10, texColor10, texColor01, texColor0m1, mixVal);
+//                mix(texColor,
+//                mix(
+//                    mix(texColorm10, texColor10, mixVal), 
+//                    mix(texColor01, texColor0m1,  mixVal),
+//                    mixVal
+//                ),mixVal);
+                vec4 texCopy = texColor;
+//                
+                vec2 distVec = u_mousePos - v_texCoord.xy;
+////                distVec *= .85;
+                float e_dist = sqrt(pow(distVec.x, 2.0) + 
+                        pow(distVec.y,2.0));
+                
+                if(e_dist <= .1){
+//                    texColor.x = 1.0 - texColor.x;
+                }
+                
+                gl_FragColor = texColor;
+//                
+//                e_dist += (e_dist * .0016);
+//                texColor.w *= e_dist;
+////               texColor.zy = step(u_mousePos, texColor.xy);
+//                gl_FragColor = texColor;
+//                <!--gl_FragColor = texture2D(u_image, v_texCoord);-->
+            }
+            
+            vec4 blurMix(in vec4 vecA, in vec4 vecB, in vec4 vecC, 
+                in vec4 vecD, in vec4 vecE, in float mixVal)
+            {
+                return mix(vecA,
+                    mix(
+                        mix(vecB, vecC, mixVal),
+                        mix(vecD, vecE, mixVal),
+                        mixVal
+                        ),mixVal
+                );
+            }
+            
+        </script>
+        
+    </head>
+    <body>
+         
+        <canvas id="c" height="800" width="800" onmousemove="update_mouse_pos(event)" ></canvas>
+        <script src="webGLUitls.js"></script>
+        <script src="webGL_Utils.js"></script>
+        <script src="gl-matrix-min.js"></script>
+        <script src="WebGL_Hello_World.js"></script>
+    </body>
+</html>
