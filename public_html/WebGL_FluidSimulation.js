@@ -7,6 +7,7 @@ var gl = canvas.getContext("webgl");
 var buffersPushed = false;
 var FBSwitch = true;
 var counter = 0.0;
+var sCounter = 0.0;
 var counterMod = .00005;
 
 document.getElementById("c").addEventListener("click",
@@ -30,7 +31,7 @@ function LOG(message)
 //get image data
 var image = new Image();
 image.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
-
+image.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
 var then = 0;
 var pObj = setup();
 
@@ -309,17 +310,28 @@ function render()
     gl.uniform2fv(gl.getUniformLocation(pObj.program, "u_mousePos"), 
             [((mouseVec.x/canvas.width) - 0.5) * 2.0,-1.0 * (((mouseVec.y/canvas.height) - 0.5) * 2.0)]);
     gl.uniform1fv(gl.getUniformLocation(pObj.program, "u_counterVal"), [counter]);
-
+    gl.uniform1fv(gl.getUniformLocation(pObj.program, "u_bilinVal"), [counter]);
     if(counter > .004777 || counter < 0.0){
         counterMod*= -1.0;
     }
     
     counter += counterMod;
-    if(FBSwitch){
+    if(sCounter < 60.0){
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTexture);
+        sCounter += 1.0;
     }else{
+        sCounter = 0.0;
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTextureB);
     }
+    
+    if(sCounter < 60.0){
+         sCounter += 1.0;
+    }
+    else{
+        FBSwitch = !FBSwitch;   
+        sCounter = 0.0;
+    }
+    
     gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     //update mouse postion vector in shader
     //Define what should be drawn and draw them

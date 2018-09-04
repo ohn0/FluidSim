@@ -64,12 +64,63 @@ and open the template in the editor.
         <script id="fragment" type="notjs">
             //fragment shader
             
+            //General flow of the fluid simulation portion.
+            // u = advect(u)
+            // u = diffuse(u)
+            // u = addForces(u)
+            // p = computePressure(u)
+            // u = subtractPressureGradient(u, p)
+            
             precision mediump float;
             uniform sampler2D u_image;
             uniform vec2 u_mousePos;
             uniform float u_counterVal;
+            uniform float u_bilinVal;
             varying vec2 v_texCoord;
             
+            
+            void gaussianBlur(in vec4 c,
+                              in vec4 cm10,
+                              in vec4 c10, 
+                              in vec4 c01, 
+                              in vec4 c0m1, 
+                              in vec4 cm11,
+                              in vec4 c11, 
+                              in vec4 cm1m1,
+                              in vec4 c1m1,
+                              out vec4 avg)
+            {
+                vec4 avgVec = (4.0 * c) + (2.0 * cm10) + (2.0 * c10) + (2.0 * c01) +
+                              (2.0 * c0m1) + (cm11 + c11 + cm1m1 + c1m1);
+                avg = avgVec / 16.0;
+            }
+            
+            void bilinearInterpolation(in vec4 aVec,
+                                       out vec4 BIVec)
+            {
+//                float n = 1.55;
+//                float n = u_bilinVal;
+                float n = 10.1;
+                vec4 aVecm1m1   = vec4(aVec.x - n, aVec.y - n, aVec.z, aVec.w);
+                vec4 aVecm11    = vec4(aVec.x - n, aVec.y + n, aVec.z, aVec.w);
+                vec4 aVec11     = vec4(aVec.x + n, aVec.y + n, aVec.z, aVec.w);
+                vec4 aVec1m1    = vec4(aVec.x + n, aVec.y - n, aVec.z, aVec.w);
+                
+                vec4 bilinA = mix(aVecm1m1, aVec11, aVec);
+                vec4 bilinB = mix(aVecm11, aVec1m1, aVec);
+                
+                float BIVecA = aVecm11.y;   //y2
+                float BIVecB = aVec.y;      //y
+                float BIVecC = aVecm1m1.y;  //y1
+                
+                
+                vec4 valA = ((BIVecA - BIVecB)/(BIVecA - BIVec)) *
+                            (bilinA);
+                vec4 valB = ((BIVecB - BIVec)/(BIVecA - BIVec)) * 
+                            (bilinB);
+                    
+                BIVec = valA + valB;
+            }
             
             void main(){
                 float tX = v_texCoord.x;
@@ -94,11 +145,20 @@ and open the template in the editor.
 //                avgVec = avgVec / 9.0;
 //--------------------box blur end----------------------
 //--------------------gaussian blur begin--------------------
-                vec4 avgVec = (4.0 *texColor) + (2.0*texColorm10) + (2.0*texColor10) + (2.0*texColor01) +
-                        (2.0*texColor0m1) + texColorm11 + texColor11 + texColorm1m1 + texColor1m1;
-                avgVec = avgVec / 16.0;
+//                vec4 avgVec = (4.0 *texColor) + (2.0*texColorm10) + (2.0*texColor10) + (2.0*texColor01) +
+//                        (2.0*texColor0m1) + texColorm11 + texColor11 + texColorm1m1 + texColor1m1;
+//                avgVec = avgVec / 16.0;
+//                
+//                vec4 avgVec;
+//                gaussianBlur(texColor, texColorm10, texColor10, texColor01,
+//                             texColor0m1, texColorm11, texColor11, texColorm1m1, texColor1m1, avgVec);
 //--------------------gaussian blur end----------------------
+//--------------------bilinear Interpolation start ----------------------//
 
+                vec4 avgVec;
+                bilinearInterpolation(texColor, avgVec);
+
+//--------------------bilinear Interpolation end   ----------------------//
 
 
                 texColor = avgVec;
