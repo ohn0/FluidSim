@@ -31,7 +31,7 @@ function LOG(message)
 //get image data
 var image = new Image();
 image.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
-image.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
+//image.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
 var then = 0;
 var pObj = setup();
 
@@ -297,6 +297,8 @@ function render()
         gl.TEXTURE_2D, pObj.FBTextureB,0);
     }
     
+    
+    
 //    gl.bindTexture(gl.TEXTURE_2D, pObj.FBTextureB);
 //    gl.bindFramebuffer(gl.FRAMEBUFFER, pObj.framebuffer);
 //    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pObj.FBTexture,0);
@@ -316,21 +318,21 @@ function render()
     }
     
     counter += counterMod;
-    if(sCounter < 60.0){
+    if(FBSwitch){
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTexture);
-        sCounter += 1.0;
+//        sCounter += 1.0;
     }else{
-        sCounter = 0.0;
+//        sCounter = 0.0;
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTextureB);
     }
-    
-    if(sCounter < 60.0){
-         sCounter += 1.0;
-    }
-    else{
-        FBSwitch = !FBSwitch;   
-        sCounter = 0.0;
-    }
+    FBSwitch = !FBSwitch;
+//    if(sCounter < 60.0){
+//         sCounter += 1.0;
+//    }
+//    else{
+//        FBSwitch = !FBSwitch;   
+//        sCounter = 0.0;
+//    }
     
     gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     //update mouse postion vector in shader
