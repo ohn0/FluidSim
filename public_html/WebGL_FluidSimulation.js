@@ -31,7 +31,10 @@ function LOG(message)
 //get image data
 var image = new Image();
 image.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
-//image.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
+
+var imageB = new Image();
+imageB.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
+
 var then = 0;
 var pObj = setup();
 
@@ -210,7 +213,23 @@ function pushBuffersToGPU(bufferObj)
                      BYTE: gl.UNSIGNED_BYTE,
                      FB_TEXTURE: null,
                      data: image}, gl);
-    bufferObj.texture = null;
+    bufferObj.texture = texture;
+    
+    var textureB = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, textureB);
+    setMipmapParams({PACK:gl.UNPACK_FLIP_Y_WEBGL, FLAG: true},
+                    {textureVal: gl.TEXTURE_2D, 
+                     texWrapS: gl.TEXTURE_WRAP_S,
+                     texWrapT: gl.TEXTURE_WRAP_T,
+                     CLAMP: gl.CLAMP_TO_EDGE,
+                     texMIN: gl.TEXTURE_MIN_FILTER,
+                     texMAG: gl.TEXTURE_MAG_FILTER,
+                     NEAREST: gl.NEAREST,
+                     COLOR: gl.RGBA,
+                     BYTE: gl.UNSIGNED_BYTE,
+                     FB_TEXTURE: null,
+                     data: imageB}, gl);
+    bufferObj.textureB = textureB;
 
     var frameBufferTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, frameBufferTexture);
@@ -283,9 +302,17 @@ function render()
     gl.bindFramebuffer(gl.FRAMEBUFFER, pObj.framebuffer);
     gl.useProgram(pObj.framebufferProgram);
     var tex0Loc = gl.getUniformLocation(pObj.framebufferProgram, "u_image");
+    var tex1Loc = gl.getUniformLocation(pObj.framebufferProgram, "u_imageB");
 
-    gl.activeTexture(gl.TEXTURE0);
     gl.uniform1i(tex0Loc, 0);
+    gl.uniform1i(tex1Loc, 2);
+    
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, pObj.texture);
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, pObj.textureB);
+    
     gl.bindFramebuffer(gl.FRAMEBUFFER, pObj.framebuffer);
     if(FBSwitch){
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTextureB);

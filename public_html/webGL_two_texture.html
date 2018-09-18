@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script id="vertexShader" type="notjs">
+            attribute vec2 a_pos;
+            attribute vec2 a_tex;
+            
+            varying vec2 v_tex;
+            void main()
+            {
+                v_tex = a_tex;
+                gl_Position = vec4(a_pos, 0.0, 1.0);
+            }
+        </script>
+        
+        <script id="fragmentShader" type="notjs">
+            precision mediump float;
+            
+            
+            uniform sampler2D u_image;
+            uniform sampler2D u_imageB;
+            
+            varying vec2 v_tex;
+            
+            void main()
+            {
+                vec2 texVec = vec2(v_tex.x, 1.0-v_tex.y);
+                if(v_tex.x < 0.2){
+                    gl_FragColor = (texture2D(u_image, texVec));
+                }
+                else{
+                    gl_FragColor = (texture2D(u_imageB, texVec));
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id="c" height="800" width="800" ></canvas>
+        <script src="webGLUitls.js"></script>
+        <script src="webGL_Utils.js"></script>
+        <script src="gl-matrix-min.js"></script>
+        <script src="webGL_two_textureJS.js"></script>    </body>
+</html>

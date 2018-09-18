@@ -33,6 +33,7 @@ and open the template in the editor.
             
             precision mediump float;
             uniform sampler2D u_image;
+            uniform sampler2D u_imageB;
 //            uniform vec2 u_mousePos;
             varying vec2 v_pos;
             varying vec2 v_texCoord;
@@ -41,9 +42,18 @@ and open the template in the editor.
             {
                 
                 vec4 texColor = texture2D(u_image, v_texCoord);
-                texColor.x += .01;
-                texColor.y -= .01;
-                gl_FragColor = texColor;
+                vec4 texColorB = texture2D(u_imageB, v_texCoord);
+                
+//                texColor.x -= 1.0;
+                
+                if(v_texCoord.x > .5){
+                    gl_FragColor = texColor;
+                }
+                else{
+                    gl_FragColor = texColorB;
+                }
+    
+    
             }   
         </script>
         
