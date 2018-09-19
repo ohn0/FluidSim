@@ -108,7 +108,8 @@ function setup()
 
     gl.viewport(0,0,gl.canvas.width, gl.canvas.height);
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-    
+    gl.viewport(0,0,gl.canvas.width, gl.canvas.height);
+
     pObj.pBuffer = pBuffer;
     pObj.tBuffer = tBuffer;
     
@@ -151,6 +152,7 @@ function pushBuffersToGPU(bufferObj)
 
 function render()
 {
+
     gl.clearColor(0,0,1,1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
@@ -159,7 +161,7 @@ function render()
         pushBuffersToGPU(pObj);
         buffersPushed = true;
     }
-    
+    gl.viewport(0,0,1920,1080);
     gl.useProgram(pObj.program);
     
     var tex0Loc = gl.getUniformLocation(pObj.program, "u_image");
@@ -173,12 +175,13 @@ function render()
     
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, pObj.texB);
-    
-//    gl.viewport(0,0, 1920, 1080);
+      gl.viewport(0,0, 1920, 1080);
+
     var primitive = gl.TRIANGLES;
     gl.drawArrays(primitive, 0, 6);
     
     gl.viewport(0,0,gl.canvas.width, gl.canvas.height);
+
     requestAnimationFrame(render);
 }
 

@@ -33,7 +33,7 @@ and open the template in the editor.
             
             precision mediump float;
             uniform sampler2D u_image;
-            uniform sampler2D u_imageB;
+//            uniform sampler2D u_imageB;
 //            uniform vec2 u_mousePos;
             varying vec2 v_pos;
             varying vec2 v_texCoord;
@@ -42,17 +42,11 @@ and open the template in the editor.
             {
                 
                 vec4 texColor = texture2D(u_image, v_texCoord);
-                vec4 texColorB = texture2D(u_imageB, v_texCoord);
+//                vec4 texColorB = texture2D(u_imageB, v_texCoord);
                 
 //                texColor.x -= 1.0;
                 
-                if(v_texCoord.x > .5){
-                    gl_FragColor = texColor;
-                }
-                else{
-                    gl_FragColor = texColorB;
-                }
-    
+                gl_FragColor = texColor;
     
             }   
         </script>
@@ -83,6 +77,7 @@ and open the template in the editor.
             
             precision mediump float;
             uniform sampler2D u_image;
+            uniform sampler2D u_imageB;
             uniform vec2 u_mousePos;
             uniform float u_counterVal;
             uniform float u_bilinVal;
@@ -154,7 +149,7 @@ and open the template in the editor.
              * 
              */
             
-            void advect(in vec2 coords, out vec4 xNew)
+            void advect(in vec2 coords, out vec2 xNew)
             {
                 
                 
@@ -162,7 +157,7 @@ and open the template in the editor.
                 vec2 pos = (coords - 1.0) * texVal.xy;
                 
                 vec2 bilinPoint;
-                bilinearInterpolation(texVal, pos, bilinPoint);
+                bilinearInterpolation(texVal, pos, xNew);
             }
             
             
@@ -174,15 +169,15 @@ and open the template in the editor.
                 float mixVal = 0.0;
                 
                 
-                vec4 texColor       =   texture2D(u_image, v_texCoord);
-                vec4 texColorm10    =   texture2D(u_image, vec2(tX-blurVal, tY));
-                vec4 texColor10     =   texture2D(u_image, vec2(tX+blurVal, tY));
-                vec4 texColor01     =   texture2D(u_image, vec2(tX, tY+blurVal));
-                vec4 texColor0m1    =   texture2D(u_image, vec2(tX, tY-blurVal));
+                vec4 texColor       =   texture2D(u_imageB, v_texCoord);
+                vec4 texColorm10    =   texture2D(u_imageB , vec2(tX-blurVal, tY));
+                vec4 texColor10     =   texture2D(u_imageB, vec2(tX+blurVal, tY));
+                vec4 texColor01     =   texture2D(u_imageB, vec2(tX, tY+blurVal));
+                vec4 texColor0m1    =   texture2D(u_image , vec2(tX, tY-blurVal));
                 vec4 texColorm11    =   texture2D(u_image, vec2(tX-blurVal, tY+blurVal));
                 vec4 texColor11     =   texture2D(u_image, vec2(tX+blurVal, tY+blurVal));
                 vec4 texColorm1m1   =   texture2D(u_image, vec2(tX -blurVal, tY-blurVal));
-                vec4 texColor1m1    =   texture2D(u_image, vec2(tX+blurVal, tY-blurVal));
+                vec4 texColor1m1    =   texture2D(u_imageB, vec2(tX+blurVal, tY-blurVal));
                 
 //--------------------box blur begin--------------------
 //                vec4 avgVec = texColor + texColorm10 + texColor10 + texColor01 +
@@ -193,16 +188,18 @@ and open the template in the editor.
 //                vec4 avgVec = (4.0 *texColor) + (2.0*texColorm10) + (2.0*texColor10) + (2.0*texColor01) +
 //                        (2.0*texColor0m1) + texColorm11 + texColor11 + texColorm1m1 + texColor1m1;
 //                avgVec = avgVec / 16.0;
-//                
-//                vec4 avgVec;
-//                gaussianBlur(texColor, texColorm10, texColor10, texColor01,
-//                             texColor0m1, texColorm11, texColor11, texColorm1m1, texColor1m1, avgVec);
+                
+                vec4 avgVec;
+                gaussianBlur(texColor, texColorm10, texColor10, texColor01,
+                             texColor0m1, texColorm11, texColor11, texColorm1m1, 
+                             texColor1m1, avgVec);
+                vec4 outputColor = avgVec;
 //--------------------gaussian blur end----------------------
 //--------------------bilinear Interpolation start ----------------------//
 
-                vec2 avgVec;
-                vec4 outputColor;
-                advect(avgVec, outputColor);
+//                vec2 avgVec;
+//                vec2 outputColor;
+//                advect(avgVec, outputColor);
 //                bilinearInterpolation(texColor, avgVec);
 
 //--------------------bilinear Interpolation end   ----------------------//
@@ -211,13 +208,13 @@ and open the template in the editor.
 //                texColor = avgVec;
 
                 vec4 texCopy = vec4(texColor.xy, 1.0, 1.0);
+//                texCopy = vec4(outputColor, 1.0, 1.0);
                 texCopy = outputColor;
-                
                 vec2 distVec = u_mousePos - v_texCoord.xy;
                 float e_dist = sqrt(pow(distVec.x, 2.0) + 
                         pow(distVec.y,2.0));
                 
-                gl_FragColor = texColor;
+                gl_FragColor = texCopy;
             }
             
             vec4 blurMix(in vec4 vecA, in vec4 vecB, in vec4 vecC, 

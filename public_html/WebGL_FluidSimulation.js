@@ -251,10 +251,7 @@ function pushBuffersToGPU(bufferObj)
     var frameBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     
-    //Create a 512 by 512 texture filled with random values
     var frameBufferTextureB = gl.createTexture();
-//    var bufferSize = 512 * 512;
-//    var texData = genUint8Texture(4 * bufferSize);
 
     gl.bindTexture(gl.TEXTURE_2D, frameBufferTextureB);
     setMipmapParams({PACK: gl.UNPACK_FLIP_Y_WEBGL, FLAG: true},
@@ -268,8 +265,6 @@ function pushBuffersToGPU(bufferObj)
                  COLOR: gl.RGBA,
                  BYTE: gl.UNSIGNED_BYTE,
                  FB_TEXTURE: null,
-//                 X_VAL: 512,
-//                 Y_VAL: 512,
                  data: image}, gl);
     
     var frameBufferB = gl.createFramebuffer();   
@@ -302,16 +297,16 @@ function render()
     gl.bindFramebuffer(gl.FRAMEBUFFER, pObj.framebuffer);
     gl.useProgram(pObj.framebufferProgram);
     var tex0Loc = gl.getUniformLocation(pObj.framebufferProgram, "u_image");
-    var tex1Loc = gl.getUniformLocation(pObj.framebufferProgram, "u_imageB");
+//    var tex1Loc = gl.getUniformLocation(pObj.framebufferProgram, "u_imageB");
 
     gl.uniform1i(tex0Loc, 0);
-    gl.uniform1i(tex1Loc, 2);
+//    gl.uniform1i(tex1Loc, 2);
     
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, pObj.texture);
 
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, pObj.textureB);
+//    gl.activeTexture(gl.TEXTURE2);
+//    gl.bindTexture(gl.TEXTURE_2D, pObj.textureB);
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, pObj.framebuffer);
     if(FBSwitch){
@@ -336,15 +331,32 @@ function render()
     gl.drawArrays(primitiveType, offset, count);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.useProgram(pObj.program);
+    tex0Loc = gl.getUniformLocation(pObj.program, "u_image");
+    var tex1Loc = gl.getUniformLocation(pObj.program, "u_imageB");
+    
     gl.uniform2fv(gl.getUniformLocation(pObj.program, "u_mousePos"), 
             [((mouseVec.x/canvas.width) - 0.5) * 2.0,-1.0 * (((mouseVec.y/canvas.height) - 0.5) * 2.0)]);
     gl.uniform1fv(gl.getUniformLocation(pObj.program, "u_counterVal"), [counter]);
     gl.uniform1fv(gl.getUniformLocation(pObj.program, "u_bilinVal"), [counter]);
+    
+//    gl.uniform1i(tex0Loc, 0);
+    gl.uniform1i(tex1Loc, 1);
+    
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    
+//    gl.activeTexture(gl.TEXTURE0);
+//    gl.bindTexture(gl.TEXTURE_2D, pObj.texture);
+    
+//    gl.activeTexture(gl.TEXTURE1);
+//    gl.bindTexture(gl.TEXTURE_2D, pObj.textureB)
+    
     if(counter > .004777 || counter < 0.0){
         counterMod*= -1.0;
     }
     
     counter += counterMod;
+    
+    gl.activeTexture(gl.TEXTURE0);
     if(FBSwitch){
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTexture);
 //        sCounter += 1.0;
@@ -352,6 +364,10 @@ function render()
 //        sCounter = 0.0;
         gl.bindTexture(gl.TEXTURE_2D, pObj.FBTextureB);
     }
+    
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, pObj.textureB);
+    
     FBSwitch = !FBSwitch;
 //    if(sCounter < 60.0){
 //         sCounter += 1.0;
