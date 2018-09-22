@@ -30,10 +30,10 @@ function LOG(message)
 
 //get image data
 var image = new Image();
-image.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
+image.src = 'http://localhost:8383/webGL%20Tutorial/cover.jpg';
 
 var imageB = new Image();
-imageB.src = 'http://localhost:8383/webGL%20Tutorial/saber.png';
+imageB.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
 
 var then = 0;
 var pObj = setup();
@@ -370,14 +370,12 @@ function render()
     
     FBSwitch = !FBSwitch;
 //    if(sCounter < 60.0){
-//         sCounter += 1.0;
-//    }
 //    else{
 //        FBSwitch = !FBSwitch;   
 //        sCounter = 0.0;
 //    }
     
-    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
+   // gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     //update mouse postion vector in shader
     //Define what should be drawn and draw them
     var primitiveType = gl.TRIANGLES;
