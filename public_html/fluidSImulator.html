@@ -20,12 +20,12 @@ and open the template in the editor.
             varying vec2 v_texCoord;
             varying vec2 v_pos;
             
-            void main()
+            void main()  
             {
                 v_texCoord = a_texture;
                 v_pos = a_position.xy;
                 gl_Position = vec4(v_pos, 0.0, 1.0);
-                
+                //how do I solve this problem
             }
         </script>
         <script id="FB_fragment" type="notjs">
@@ -37,7 +37,7 @@ and open the template in the editor.
 //            uniform vec2 u_mousePos;
             varying vec2 v_pos;
             varying vec2 v_texCoord;
-            
+             
             void main()
             {
                 
@@ -55,20 +55,46 @@ and open the template in the editor.
             attribute vec2 a_position;
             attribute vec3 a_colors;
             attribute vec2 a_texture;
+            gl_Position = vec4(v_pos, 0.0, 1.0);
+                
+            }
+        </script>
+        <script id="fragment" type="notjs">
+            //fragment shader
             
+            precision mediump float;
+            uniform sampler2D u_image;
+//            uniform sampler2D u_imageB;
+//            uniform vec2 u_mousePos;
+            varying vec2 v_pos;
             varying vec2 v_texCoord;
+             
+            void main()
+            {
+                
+                vec4 texColor = texture2D(u_image, v_texCoord);
+//                vec4 texColorB = texture2D(u_imageB, v_texCoord);
+                
+                gl_FragColor = texColor;
+    
+            }   
+        </script>
+        
+    
+            varying vec2 v_texCoord; 
             
             void main() {
                 v_texCoord = a_texture;
                 gl_Position = vec4(a_position.xy, 0.0, 1.0);
                 }
         </script>
-        <script id="fragment" type="notjs">
+        
+        <script id="FFfragment" type="notjs">
             //fragment shader
             
             //General flow of the fluid simulation portion.
             // u = advect(u)
-            // u = diffuse(u)
+            // u = diffuse(u) 
             // u = addForces(u)
             // p = computePressure(u)
             // u = subtractPressureGradient(u, p)
@@ -77,7 +103,7 @@ and open the template in the editor.
             uniform sampler2D u_image;
             uniform sampler2D u_imageB;
             uniform vec2 u_mousePos;
-            uniform float u_counterVal;
+            uniform float u_counterVal; 
             uniform float u_bilinVal;
             varying vec2 v_texCoord;
             
@@ -116,7 +142,7 @@ and open the template in the editor.
                 float BIVecA = aVecm11.y;   //y2
                 float BIVecB = aVec.y;      //y
                 float BIVecC = aVecm1m1.y;  //y1
-                
+                 
                 
                 vec2 valA = ((BIVecA - BIVecB)/(BIVecA - BIVec)) *
                             (bilinA);

@@ -30,7 +30,7 @@ function LOG(message)
 
 //get image data
 var image = new Image();
-image.src = 'http://localhost:8383/webGL%20Tutorial/cover.jpg';
+image.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
 
 var imageB = new Image();
 imageB.src = 'http://localhost:8383/webGL%20Tutorial/shiki.png';
@@ -75,10 +75,9 @@ function createShader(gl, type, source)
     }
     
     console.log(gl.getShaderInfoLog(shader));
-    console.log(gl.getProgramInfoLog(shader));
+    console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
 }
-
 
 
 //creates the program on the GPU, attaches the shaders and links the program
@@ -130,7 +129,6 @@ function setup()
     var program = createProgram(gl, vertexShader, fragmentShader);
 
     programObj.program = program;
-//    programObj.framebufferProgram = createShaderProgram("vFBshader", "fFBshader", gl);
     programObj.framebufferProgram = createShaderProgram("FB_vertex", "FB_fragment", gl);
     
     
