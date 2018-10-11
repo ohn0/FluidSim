@@ -214,7 +214,7 @@ function baselineRender()
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     
-    gl.useProgram(bufferObj.program);
+    gl.useProgram(bufferObj.FBprogram);
     
     if(!texturesBound){
         if(activateAndBindTexture("u_image", bufferObj.program, bufferObj.textureA) === 0){
