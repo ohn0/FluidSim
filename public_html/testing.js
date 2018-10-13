@@ -125,8 +125,12 @@ function setup()
     
     var program = createProgram(gl, shaderProgramA[0], shaderProgramA[1]);
     var FB_program = createProgram(gl, shaderProgramB[0], shaderProgramB[1]);
+    
+    var frameBuffer = createFrameBuffer();
     pObj.program = program;
     pObj.FBprogram = FB_program;
+    pObj.frameBuffer = frameBuffer;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     
     var a_posLoc = gl.getAttribLocation(program, "a_pos");
     var a_texLoc = gl.getAttribLocation(program, "a_tex");
@@ -208,7 +212,10 @@ function attachImageToTexture(image, texLoc, texBuffer)
 function baselineRender()
 {
     resize(gl.canvas);
-    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
+    bindTextureAndSetViewport(null, gl.canvas.width, gl.canvas.height);
+
+//    gl.bindTexture(gl.TEXTURE_2D, null);
+//    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
 
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -247,15 +254,23 @@ function baselineRender()
 function render()
 {
     resize(gl.canvas);
-    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
+    bindTextureAndSetViewport(null, gl.canvas.width, gl.canvas.height);
+//    gl.bindTexture(gl.TEXTURE_2D, null);
+//    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-    gl.useProgram(bufferObj.program);
+    gl.useProgram(bufferObj.FB_program);
     
     
     
     requestAnimationFrame(render);
+}
+
+function bindTextureAndSetViewport(texture, width, height)
+{
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.viewport(0,0, width, height);
 }
 
 
@@ -295,6 +310,29 @@ function createTexture()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     return texture;
+    
+    
+}
+
+function createFrameBufferTexture(width, height)
+{
+    var FBTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, FBTexture);
+    var level = 0;
+    var internalFormat = gl.RGBA;
+    var border = 0;
+    var format = gl.RGBA;
+    var type = gl.UNSIGNED_BYTE;
+    var data = null;
+    
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+    width, height, border, format, type, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return FBTexture;
     
 }
 
