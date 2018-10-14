@@ -2,7 +2,7 @@
 
 var canvas = document.getElementById("c");
 var gl = canvas.getContext("webgl");
-var bufferObj = {};
+var entityState = {};
 var textureCounter = 0;
 var texturesBound = false;
 
@@ -19,8 +19,8 @@ image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
 //image.onload = function() 
 //{    
 //
-//    bufferObj = setup();
-//    pushBuffersToGPU(bufferObj);
+//    entityState = setup();
+//    pushBuffersToGPU(entityState);
 //    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
 //    requestAnimationFrame(b);
 //
@@ -30,20 +30,20 @@ image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
 
 var baselineRenderFunc = function()
 {
-    bufferObj = setup();
-    pushBuffersToGPU(bufferObj);
+    entityState = setup();
+    pushBuffersToGPU(entityState);
     gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     requestAnimationFrame(baselineRender);
 };
 
 image.onload = function() {
-    baselineRenderFunc();
+    renderFunc();
 };
 
 var renderFunc = function()
 {
-    bufferObj = setup();
-    pushBuffersToGPU(bufferObj);
+    entityState = setup();
+    pushBuffersToGPU(entityState);
     createFramebuffer();
     gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     requestAnimationFrame(render);    
@@ -126,7 +126,7 @@ function setup()
     var program = createProgram(gl, shaderProgramA[0], shaderProgramA[1]);
     var FB_program = createProgram(gl, shaderProgramB[0], shaderProgramB[1]);
     
-    var frameBuffer = createFrameBuffer();
+    var frameBuffer = createFramebuffer();
     pObj.program = program;
     pObj.FBprogram = FB_program;
     pObj.frameBuffer = frameBuffer;
@@ -177,20 +177,31 @@ function setup()
     pObj.a_PosLoc = a_posLoc;
     pObj.a_TexLoc = a_texLoc;
     pObj.b_TexLoc = b_texLoc;
+    pObj.FB_a_PosLoc = FB_a_posLoc;
+    pObj.FB_a_TexLoc = FB_a_texLoc;
+    
+    
     pObj.a_PosBuffer = posBuffer;
     pObj.a_TexBuffer = texBuffer;
     
     return pObj;
 }
 
-function pushBuffersToGPU(bufferObj)
+
+
+function pushBuffersToGPU(entityState)
 {
-    enableBind(bufferObj.a_PosLoc, bufferObj.a_PosBuffer, gl.ARRAY_BUFFER);
-    gl.vertexAttribPointer(bufferObj.a_PosLoc, 2, gl.FLOAT, false, 0, 0);
+    enableBind(entityState.a_PosLoc, entityState.a_PosBuffer, gl.ARRAY_BUFFER);
+    gl.vertexAttribPointer(entityState.a_PosLoc, 2, gl.FLOAT, false, 0, 0);
+    
+    enableBind(entityState.FB_a_PosLoc, entityState.a_PosBuffer, gl.ARRAY_BUFFER);
+    gl.vertexAttribPointer(entityState.FB_a_PosLoc, 2, gl.FLOAT, false, 0, 0);  
     
     
-    bufferObj.textureA = attachImageToTexture(image, bufferObj.a_TexLoc, bufferObj.a_TexBuffer);
-    bufferObj.textureB = attachImageToTexture(image2, bufferObj.b_TexLoc, bufferObj.a_TexBuffer);
+    entityState.textureA = attachImageToTexture(image, entityState.a_TexLoc, entityState.a_TexBuffer);
+    entityState.textureB = attachImageToTexture(image2, entityState.b_TexLoc, entityState.a_TexBuffer);
+    entityState.textureC = attachImageToTexture(image, entityState.FB_a_TexLoc, entityState.a_TexBuffer);
+    
 
     
 }
@@ -221,33 +232,27 @@ function baselineRender()
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     
-    gl.useProgram(bufferObj.FBprogram);
+    gl.useProgram(entityState.program);
     
     if(!texturesBound){
-        if(activateAndBindTexture("u_image", bufferObj.program, bufferObj.textureA) === 0){
+        if(activateAndBindTexture("u_image", entityState.program, entityState.textureA) === 0){
             console.log("Error activating or linking u_image");
         }
 
-        if(activateAndBindTexture("u_imageB", bufferObj.program, bufferObj.textureB) === 0){
+        if(activateAndBindTexture("u_imageB", entityState.program, entityState.textureB) === 0){
             console.log("Error activating or linking u_imageB");
         }
         texturesBound = true;
     }
     
-//    if(activateAndBindTexture("u_image", bufferObj.program, bufferObj.textureA) === 0){
-//        console.log("Error activating or linking u_image");
-//    }
-//
-//    if(activateAndBindTexture("u_imageB", bufferObj.program, bufferObj.textureB) === 0){
-//        console.log("Error activating or linking u_imageB");
-//    }
 
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0; 
-    var count = 6;
-    gl.clearColor(.5,.5,.5,1);
-    
-    gl.drawArrays(primitiveType, offset, count);
+//    var primitiveType = gl.TRIANGLES;
+//    var offset = 0; 
+//    var count = 6;
+//    gl.clearColor(.5,.5,.5,1);
+//    gl.drawArrays(primitiveType, offset, count);
+
+    drawToOutput(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(baselineRender);
 }
 
@@ -255,15 +260,21 @@ function render()
 {
     resize(gl.canvas);
     bindTextureAndSetViewport(null, gl.canvas.width, gl.canvas.height);
-//    gl.bindTexture(gl.TEXTURE_2D, null);
-//    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-    gl.useProgram(bufferObj.FB_program);
+//    bindTextureAndSetViewport(entityState.FB_texture, gl.canvas.width, gl.canvas.height);
+    gl.useProgram(entityState.FBprogram);
+    
+    if(!texturesBound){
+        if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureC) === 0){
+            console.log("Error Activating or linking u_FBimage");
+        }
+        texturesBound = true;
+    }
     
     
-    
+    drawToOutput(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(render);
 }
 
@@ -273,6 +284,13 @@ function bindTextureAndSetViewport(texture, width, height)
     gl.viewport(0,0, width, height);
 }
 
+function drawToOutput(primitiveType, offset, count)
+{
+
+    gl.clearColor(.5, .5, .5, 1.0);
+    gl.drawArrays(primitiveType, offset, count);
+
+}
 
 function resize(canvas) 
 {
@@ -340,7 +358,7 @@ function createFramebuffer()
 {
     var texture = createTexture(); 
     
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, image.width, image.height, 0, 
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
         
     var fBuffer = gl.createFramebuffer();
@@ -349,6 +367,7 @@ function createFramebuffer()
     gl.framebufferTexture2D(
         gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
+    entityState.FB_texture = texture;
     return fBuffer;
 }
 

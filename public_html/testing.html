@@ -38,11 +38,11 @@ and open the template in the editor.
         <script id="FB_FragmentShader" type="notjs">
             precision mediump float;
             varying vec2 v_tex;
-            uniform sampler2D u_image;
+            uniform sampler2D u_FBimage;
             
             void main()
             {
-                gl_FragColor =  vec4(texture2D(u_image, v_tex).xy, 1.0, 1.0);
+                gl_FragColor =  vec4(texture2D(u_FBimage, v_tex).xy, 1.0, 1.0);
             }
             
         </script>
