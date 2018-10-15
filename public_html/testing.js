@@ -136,8 +136,8 @@ function setup()
     var a_texLoc = gl.getAttribLocation(program, "a_tex");
     var b_texLoc = gl.getAttribLocation(program, "a_texB");
     
-    var FB_a_posLoc = gl.getAttribLocation(FB_program, "a_pos");
-    var FB_a_texLoc = gl.getAttribLocation(FB_program, "a_tex");
+    var FB_a_posLoc = gl.getAttribLocation(FB_program, "a_FB_pos");
+    var FB_a_texLoc = gl.getAttribLocation(FB_program, "a_FB_tex");
     
     var posBuffer = gl.createBuffer();
     var texBuffer = gl.createBuffer();
@@ -309,6 +309,7 @@ function activateAndBindTexture(samplerID, glProgram, texture)
     var texLoc = gl.getUniformLocation(glProgram, samplerID);
     gl.uniform1i(texLoc, textureCounter);
     gl.activeTexture(gl.TEXTURE0 + textureCounter);
+    
     gl.bindTexture(gl.TEXTURE_2D, texture);
     
     textureCounter++;
@@ -366,7 +367,7 @@ function createFramebuffer()
     
     gl.framebufferTexture2D(
         gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
+    
     entityState.FB_texture = texture;
     return fBuffer;
 }
