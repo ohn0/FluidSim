@@ -26,8 +26,8 @@ and open the template in the editor.
         <script id="FB_VertexShader" type="notjs">
             attribute vec2 a_FB_pos;
             attribute vec2 a_FB_tex;
-            
-            varying vec2 v_FB_tex;
+             
+           varying vec2 v_FB_tex;
             void main()
             {
                 v_FB_tex = a_FB_tex;
@@ -42,7 +42,7 @@ and open the template in the editor.
             
             void main()
             {
-                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 1.0, 1.0);
+                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 0.55, 1.0);
             }
             
         </script>

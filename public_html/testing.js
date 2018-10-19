@@ -44,7 +44,7 @@ var renderFunc = function()
 {
     entityState = setup();
     pushBuffersToGPU(entityState);
-    createFramebuffer();
+    entityState.FBuffer = createFramebuffer();
     gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
     requestAnimationFrame(render);    
 };
@@ -121,7 +121,7 @@ function setup()
 //    
 //    var vShader = createShader(gl, gl.VERTEX_SHADER, vSource);
 //    var fShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
-    
+//    
     
     var program = createProgram(gl, shaderProgramA[0], shaderProgramA[1]);
     var FB_program = createProgram(gl, shaderProgramB[0], shaderProgramB[1]);
@@ -200,7 +200,7 @@ function pushBuffersToGPU(entityState)
     
     entityState.textureA = attachImageToTexture(image, entityState.a_TexLoc, entityState.a_TexBuffer);
     entityState.textureB = attachImageToTexture(image2, entityState.b_TexLoc, entityState.a_TexBuffer);
-    entityState.textureC = attachImageToTexture(image, entityState.FB_a_TexLoc, entityState.a_TexBuffer);
+    entityState.textureC = attachImageToTexture(image2, entityState.FB_a_TexLoc, entityState.a_TexBuffer);
     
 
     
@@ -259,11 +259,11 @@ function baselineRender()
 function render()
 {
     resize(gl.canvas);
-    bindTextureAndSetViewport(null, gl.canvas.width, gl.canvas.height);
+    bindFramebufferAndSetViewport(null, gl.canvas.width, gl.canvas.height);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-//    bindTextureAndSetViewport(entityState.FB_texture, gl.canvas.width, gl.canvas.height);
+    bindFramebufferAndSetViewport(entityState.FBuffer, gl.canvas.width, gl.canvas.height);
     gl.useProgram(entityState.FBprogram);
     
     if(!texturesBound){
@@ -278,9 +278,9 @@ function render()
     requestAnimationFrame(render);
 }
 
-function bindTextureAndSetViewport(texture, width, height)
+function bindFramebufferAndSetViewport(framebuffer, width, height)
 {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     gl.viewport(0,0, width, height);
 }
 
@@ -358,10 +358,10 @@ function createFrameBufferTexture(width, height)
 function createFramebuffer()
 {
     var texture = createTexture(); 
-    
+    gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
-        
+
     var fBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer);
     
@@ -369,6 +369,8 @@ function createFramebuffer()
         gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     
     entityState.FB_texture = texture;
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return fBuffer;
 }
 
