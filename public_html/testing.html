@@ -76,21 +76,21 @@ and open the template in the editor.
             varying vec2 v_tex;
             varying vec2 v_pos;
             
-            void main()
+            void main() 
             {
                 
                 
 //                gl_FragColor = vec4(vec2(texture2D(u_image, v_tex).xy), 
 //                vec2(texture2D(u_imageB, v_tex).zw));
                 
-                if(v_tex.x > 0.5){
-                    gl_FragColor = vec4(texture2D(u_image, v_tex));
-                }
-                else{
-                    gl_FragColor = vec4(texture2D(u_imageB, v_tex));
-                }
-                
-
+//                if(v_tex.x > 0.5){
+//                    gl_FragColor = vec4(texture2D(u_image, v_tex));
+//                }
+//                else{
+//                    gl_FragColor = vec4(texture2D(u_imageB, v_tex));
+//                }
+//             
+                gl_FragColor = vec4(texture2D(u_image, v_tex));
             }
             
         </script>

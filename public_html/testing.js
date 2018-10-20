@@ -12,7 +12,7 @@ if(!gl){alert("webGL not initialized")};
     
 var image = new Image();
 var image2 = new Image();
-image.src= 'http://localhost:8383/webGL%20Tutorial/shiki.png';
+image.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
 image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
 
 //
@@ -104,7 +104,7 @@ function createShaderProgram(vShaderStr, fShaderStr)
     var fShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
     
     return [vShader, fShader];
-    
+     
 }
 
 function setup()
@@ -246,35 +246,48 @@ function baselineRender()
     }
     
 
-//    var primitiveType = gl.TRIANGLES;
-//    var offset = 0; 
-//    var count = 6;
-//    gl.clearColor(.5,.5,.5,1);
-//    gl.drawArrays(primitiveType, offset, count);
+
 
     drawToOutput(gl.TRIANGLES, 0, 6);
     requestAnimationFrame(baselineRender);
 }
 
+var FBtextureBound = false;
+
 function render()
 {
     resize(gl.canvas);
-    bindFramebufferAndSetViewport(null, gl.canvas.width, gl.canvas.height);
+    bindFramebufferAndSetViewport(null, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-    bindFramebufferAndSetViewport(entityState.FBuffer, gl.canvas.width, gl.canvas.height);
+    bindFramebufferAndSetViewport(entityState.FBuffer, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.useProgram(entityState.FBprogram);
     
     if(!texturesBound){
-        if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureC) === 0){
+        if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureA) === 0){
             console.log("Error Activating or linking u_FBimage");
         }
         texturesBound = true;
     }
     
-    
     drawToOutput(gl.TRIANGLES, 0, 6);
+
+    
+//    resize(gl.canvas);
+    bindFramebufferAndSetViewport(null, gl.canvas.clientWidth, gl.canvas.clientHeight);
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(entityState.program);
+    
+    if(!FBtextureBound){
+        if(activateAndBindTexture("u_image", entityState.program, entityState.FB_texture) === 0){
+            console.log("Error activating or linking u_image");
+        }
+        FBtextureBound = true;
+    }
+    drawToOutput(gl.TRIANGLES, 0, 6);
+
     requestAnimationFrame(render);
 }
 
@@ -359,7 +372,7 @@ function createFramebuffer()
 {
     var texture = createTexture(); 
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, 
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1920, 1080, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
 
     var fBuffer = gl.createFramebuffer();
