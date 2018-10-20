@@ -42,7 +42,8 @@ and open the template in the editor.
             
             void main()
             {
-                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 0.55, 1.0);
+//                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 0.55, 1.0);
+                gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex));
             }
             
         </script>
@@ -58,7 +59,9 @@ and open the template in the editor.
             
             void main()
             {
-                v_tex = mix(a_tex, a_texB, vec2(0.1, 0.9));
+//                v_tex = mix(a_tex, a_texB, vec2(0.1, 0.9));
+                
+                v_tex = a_tex;
                 v_pos = a_pos;
                 
                 gl_Position = vec4(v_pos, 1.0, 1.0);
@@ -78,19 +81,12 @@ and open the template in the editor.
             
             void main() 
             {
+                vec4 texColor = vec4(texture2D(u_image, v_tex));
                 
+//                gl_FragColor = vec4(texture2D(u_image, v_tex).xy, 1.0, 1.0);
                 
-//                gl_FragColor = vec4(vec2(texture2D(u_image, v_tex).xy), 
-//                vec2(texture2D(u_imageB, v_tex).zw));
-                
-//                if(v_tex.x > 0.5){
-//                    gl_FragColor = vec4(texture2D(u_image, v_tex));
-//                }
-//                else{
-//                    gl_FragColor = vec4(texture2D(u_imageB, v_tex));
-//                }
-//             
-                gl_FragColor = vec4(texture2D(u_image, v_tex));
+                gl_FragColor = vec4(texColor.x, texColor.y*0.777, texColor.z, 1.0);
+
             }
             
         </script>

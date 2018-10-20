@@ -223,7 +223,7 @@ function attachImageToTexture(image, texLoc, texBuffer)
 function baselineRender()
 {
     resize(gl.canvas);
-    bindTextureAndSetViewport(null, gl.canvas.width, gl.canvas.height);
+    bindFramebufferAndSetViewport(null, gl.canvas.width, gl.canvas.height);
 
 //    gl.bindTexture(gl.TEXTURE_2D, null);
 //    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
@@ -257,11 +257,12 @@ var FBtextureBound = false;
 function render()
 {
     resize(gl.canvas);
-    bindFramebufferAndSetViewport(null, gl.canvas.clientWidth, gl.canvas.clientHeight);
+    bindFramebufferAndSetViewport(null, 1920, 1080);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     bindFramebufferAndSetViewport(entityState.FBuffer, gl.canvas.clientWidth, gl.canvas.clientHeight);
+
     gl.useProgram(entityState.FBprogram);
     
     if(!texturesBound){
@@ -274,8 +275,8 @@ function render()
     drawToOutput(gl.TRIANGLES, 0, 6);
 
     
-//    resize(gl.canvas);
-    bindFramebufferAndSetViewport(null, gl.canvas.clientWidth, gl.canvas.clientHeight);
+    bindFramebufferAndSetViewport(null, 1920, 1080);
+
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(entityState.program);
@@ -365,16 +366,17 @@ function createFrameBufferTexture(width, height)
     
     gl.bindTexture(gl.TEXTURE_2D, null);
     return FBTexture;
-    
 }
 
 function createFramebuffer()
 {
     var texture = createTexture(); 
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1920, 1080, 0, 
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1024, 1024, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
-
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     var fBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer);
     
