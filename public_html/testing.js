@@ -179,7 +179,7 @@ function setup()
     pObj.b_TexLoc = b_texLoc;
     pObj.FB_a_PosLoc = FB_a_posLoc;
     pObj.FB_a_TexLoc = FB_a_texLoc;
-    
+    pObj.textures = [];
     
     pObj.a_PosBuffer = posBuffer;
     pObj.a_TexBuffer = texBuffer;
@@ -253,6 +253,7 @@ function baselineRender()
 }
 
 var FBtextureBound = false;
+var textureSwitch = false;
 
 function render()
 {
@@ -269,12 +270,37 @@ function render()
         if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureA) === 0){
             console.log("Error Activating or linking u_FBimage");
         }
-        texturesBound = true;
+//        texturesBound = true;
+    } 
+    
+    
+    if(texturesBound){
+        var glProgram = entityState.FBprogram;
+        var samplerID = "u_FBimage";
+        var texture;
+        if(textureSwitch){
+            texture = entityState.textureA;
+//            gl.activeTexture(entityState.textures[1]);
+            var texLoc = gl.getUniformLocation(glProgram, samplerID);
+//            gl.uniform1i(texLoc, textureCounter);
+            gl.activeTexture(entityState.textures[1]);
+//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+        }
+        else {
+            texture = entityState.FB_texture;
+//            gl.activeTexture(entityState.textures[0]);
+            var texLoc = gl.getUniformLocation(glProgram, samplerID);
+//            gl.uniform1i(texLoc, textureCounter);
+            gl.activeTexture(entityState.textures[0]);
+//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+        }        
     }
+
     
     drawToOutput(gl.TRIANGLES, 0, 6);
 
-    
     bindFramebufferAndSetViewport(null, 1920, 1080);
 
     gl.clearColor(0,0,0,0);
@@ -287,9 +313,47 @@ function render()
         }
         FBtextureBound = true;
     }
+//    if(textureSwitch){
+//        gl.activeTexture(entityState.textures[0]);
+//    }
+//    else {
+//        gl.activeTexture(entityState.textures[1]);
+//    }
+//    
+
+    if(texturesBound){
+        var glProgram = entityState.program;
+        var samplerID = "u_image";
+        var texture;
+        if(textureSwitch){
+            texture = entityState.FB_texture;
+//            gl.activeTexture(entityState.textures[1]);
+            var texLoc = gl.getUniformLocation(glProgram, samplerID);
+//            gl.uniform1i(texLoc, textureCounter);
+            gl.activeTexture(entityState.textures[0]);
+//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+        }
+        else {
+            texture = entityState.textureA;
+//            gl.activeTexture(entityState.textures[0]);
+            var texLoc = gl.getUniformLocation(glProgram, samplerID);
+//            gl.uniform1i(texLoc, textureCounter);
+            gl.activeTexture(entityState.textures[1]);
+//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+        }        
+    }
+    textureSwitch = !textureSwitch; 
+    
     drawToOutput(gl.TRIANGLES, 0, 6);
+    
 
     requestAnimationFrame(render);
+    
+    if(!texturesBound){
+        texturesBound = true;
+    }
 }
 
 function bindFramebufferAndSetViewport(framebuffer, width, height)
@@ -323,7 +387,7 @@ function activateAndBindTexture(samplerID, glProgram, texture)
     var texLoc = gl.getUniformLocation(glProgram, samplerID);
     gl.uniform1i(texLoc, textureCounter);
     gl.activeTexture(gl.TEXTURE0 + textureCounter);
-    
+    entityState.textures.push(gl.TEXTURE0 + textureCounter);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     
     textureCounter++;
@@ -361,6 +425,7 @@ function createFrameBufferTexture(width, height)
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
     width, height, border, format, type, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     

@@ -42,8 +42,10 @@ and open the template in the editor.
             
             void main()
             {
+                gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex).xy, 1.0, 1.0);
+
 //                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 0.55, 1.0);
-                gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex));
+//                gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex));
             }
             
         </script>
@@ -85,7 +87,7 @@ and open the template in the editor.
                 
 //                gl_FragColor = vec4(texture2D(u_image, v_tex).xy, 1.0, 1.0);
                 
-                gl_FragColor = vec4(texColor.x, texColor.y*0.777, texColor.z, 1.0);
+                gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, 1.0);
 
             }
             
