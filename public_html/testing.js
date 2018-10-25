@@ -197,9 +197,10 @@ function pushBuffersToGPU(entityState)
     enableBind(entityState.FB_a_PosLoc, entityState.a_PosBuffer, gl.ARRAY_BUFFER);
     gl.vertexAttribPointer(entityState.FB_a_PosLoc, 2, gl.FLOAT, false, 0, 0);  
     
-    
+    gl.useProgram(entityState.program);
     entityState.textureA = attachImageToTexture(image, entityState.a_TexLoc, entityState.a_TexBuffer);
     entityState.textureB = attachImageToTexture(image2, entityState.b_TexLoc, entityState.a_TexBuffer);
+    gl.useProgram(entityState.FBprogram);
     entityState.textureC = attachImageToTexture(image2, entityState.FB_a_TexLoc, entityState.a_TexBuffer);
     
 
@@ -265,39 +266,46 @@ function render()
     bindFramebufferAndSetViewport(entityState.FBuffer, gl.canvas.clientWidth, gl.canvas.clientHeight);
 
     gl.useProgram(entityState.FBprogram);
-    
-    if(!texturesBound){
-        if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureA) === 0){
-            console.log("Error Activating or linking u_FBimage");
-        }
-//        texturesBound = true;
-    } 
-    
-    
-    if(texturesBound){
-        var glProgram = entityState.FBprogram;
-        var samplerID = "u_FBimage";
-        var texture;
-        if(textureSwitch){
-            texture = entityState.textureA;
-//            gl.activeTexture(entityState.textures[1]);
-            var texLoc = gl.getUniformLocation(glProgram, samplerID);
-//            gl.uniform1i(texLoc, textureCounter);
-            gl.activeTexture(entityState.textures[1]);
-//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-        }
-        else {
-            texture = entityState.FB_texture;
-//            gl.activeTexture(entityState.textures[0]);
-            var texLoc = gl.getUniformLocation(glProgram, samplerID);
-//            gl.uniform1i(texLoc, textureCounter);
-            gl.activeTexture(entityState.textures[0]);
-//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-        }        
-    }
 
+    var glProgram = entityState.FBprogram;
+    var samplerID = "u_FBimage";
+    var texture;
+    var texLoc = gl.getUniformLocation(glProgram, samplerID);
+
+//------------------------------------------base line
+//    if(!texturesBound){
+//        if(activateAndBindTexture("u_FBimage", entityState.FBprogram, entityState.textureA) === 0){
+//            console.log("Error Activating or linking u_FBimage");
+//        }
+//    }
+//------------------------------------------base line
+
+
+
+    if(!texturesBound){
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, entityState.FBuffer);
+
+        gl.framebufferTexture2D(
+            gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, entityState.FB_texture, 0);
+
+
+        gl.uniform1i(texLoc, 1);
+        texture = entityState.textureA;
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, entityState.textureA);
+    }else
+    {
+        
+        gl.uniform1i(texLoc, 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, entityState.FB_texture);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, entityState.FBuffer);
+        gl.framebufferTexture2D(
+            gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, entityState.textureA, 0);
+    }
     
     drawToOutput(gl.TRIANGLES, 0, 6);
 
@@ -307,53 +315,37 @@ function render()
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(entityState.program);
     
-    if(!FBtextureBound){
-        if(activateAndBindTexture("u_image", entityState.program, entityState.FB_texture) === 0){
-            console.log("Error activating or linking u_image");
-        }
-        FBtextureBound = true;
-    }
-//    if(textureSwitch){
-//        gl.activeTexture(entityState.textures[0]);
+    
+//--------------------------------------------Base line
+//    if(!FBtextureBound){
+////        if(activateAndBindTexture("u_image", entityState.program, entityState.FB_texture) === 0){
+////            console.log("Error activating or linking u_image");
+////        }
+//        gl.uniform1i(gl.getUniformLocation(entityState.program, "u_image"), 2);
+//        gl.activeTexture(gl.TEXTURE2);
+//        gl.bindTexture(gl.TEXTURE_2D, entityState.FB_texture);
+//        FBtextureBound = true;
 //    }
-//    else {
-//        gl.activeTexture(entityState.textures[1]);
-//    }
-//    
+//--------------------------------------------Base line
 
-    if(texturesBound){
-        var glProgram = entityState.program;
-        var samplerID = "u_image";
-        var texture;
-        if(textureSwitch){
-            texture = entityState.FB_texture;
-//            gl.activeTexture(entityState.textures[1]);
-            var texLoc = gl.getUniformLocation(glProgram, samplerID);
-//            gl.uniform1i(texLoc, textureCounter);
-            gl.activeTexture(entityState.textures[0]);
-//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-        }
-        else {
-            texture = entityState.textureA;
-//            gl.activeTexture(entityState.textures[0]);
-            var texLoc = gl.getUniformLocation(glProgram, samplerID);
-//            gl.uniform1i(texLoc, textureCounter);
-            gl.activeTexture(entityState.textures[1]);
-//            entityState.textures.push(gl.TEXTURE0 + textureCounter);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-        }        
+    
+    if(!texturesBound){
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, entityState.FB_texture);
+    }else{
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, entityState.textureA);
     }
+    
     textureSwitch = !textureSwitch; 
     
     drawToOutput(gl.TRIANGLES, 0, 6);
     
 
     requestAnimationFrame(render);
+  
     
-    if(!texturesBound){
-        texturesBound = true;
-    }
+    texturesBound = !texturesBound;
 }
 
 function bindFramebufferAndSetViewport(framebuffer, width, height)
@@ -436,6 +428,7 @@ function createFrameBufferTexture(width, height)
 function createFramebuffer()
 {
     var texture = createTexture(); 
+//    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1024, 1024, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -451,6 +444,7 @@ function createFramebuffer()
     entityState.FB_texture = texture;
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+//    gl.activeTexture(null);
     return fBuffer;
 }
 
