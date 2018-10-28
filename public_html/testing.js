@@ -9,11 +9,15 @@ var texturesBound = false;
 if(!gl){alert("webGL not initialized")};
 
 
-    
-var image = new Image();
-var image2 = new Image();
-image.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
-image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
+var images;
+//
+//// = [];
+//var image = new Image();
+//var image2 = new Image();
+//image.src= 'http://localhost:8383/webGL%20Tutorial/cat.jpg';
+//image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
+
+
 
 //
 //image.onload = function() 
@@ -28,7 +32,8 @@ image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
 
 
 
-var baselineRenderFunc = function()
+//var baselineRenderFunc = function()
+function baselineRenderFunc()
 {
     entityState = setup();
     pushBuffersToGPU(entityState);
@@ -36,11 +41,36 @@ var baselineRenderFunc = function()
     requestAnimationFrame(baselineRender);
 };
 
-image.onload = function() {
-    renderFunc();
-};
+function loadImage(url, callback)
+{
+    var image = new Image();
+    image.src = url;
+    image.onload = callback;
+    return image;
+}
 
-var renderFunc = function()
+var imagesToLoad;
+
+function loadImages(urls, callback)
+{
+    images = [];
+    imagesToLoad = urls.length;
+    
+    var onImageLoad = function()
+    {
+        --imagesToLoad;
+        if(imagesToLoad === 0){
+            callback();
+        }
+    };
+    
+    for (var ii = 0; ii < imagesToLoad; ++ii){
+        var image = loadImage(urls[ii], onImageLoad);
+        images.push(image);
+    }
+}
+
+function renderFunc()
 {
     entityState = setup();
     pushBuffersToGPU(entityState);
@@ -141,7 +171,7 @@ function setup()
     
     var a_posLoc = gl.getAttribLocation(program, "a_pos");
     var a_texLoc = gl.getAttribLocation(program, "a_tex");
-    var b_texLoc = gl.getAttribLocation(program, "a_texB");
+    var b_texLoc = gl.getAttribLocation(program, "a_tex");
     
     var FB_a_posLoc = gl.getAttribLocation(FB_program, "a_FB_pos");
     var FB_a_texLoc = gl.getAttribLocation(FB_program, "a_FB_tex");
@@ -205,23 +235,23 @@ function pushBuffersToGPU(entityState)
     gl.vertexAttribPointer(entityState.FB_a_PosLoc, 2, gl.FLOAT, false, 0, 0);  
     
     gl.useProgram(entityState.program);
-    entityState.textureA = attachImageToTexture(image, entityState.a_TexLoc, entityState.a_TexBuffer);
-    entityState.textureB = attachImageToTexture(image2, entityState.b_TexLoc, entityState.a_TexBuffer);
+    entityState.textureA = attachImageToTexture(images[0], entityState.a_TexLoc, entityState.a_TexBuffer);
+    entityState.textureB = attachImageToTexture(images[1], entityState.b_TexLoc, entityState.a_TexBuffer);
     gl.useProgram(entityState.FBprogram);
-    entityState.textureC = attachImageToTexture(image2, entityState.FB_a_TexLoc, entityState.a_TexBuffer);
+    entityState.textureC = attachImageToTexture(images[1], entityState.FB_a_TexLoc, entityState.a_TexBuffer);
     
 
     
 }
 
-function attachImageToTexture(image, texLoc, texBuffer)
+function attachImageToTexture(Limage, texLoc, texBuffer)
 {
     enableBind(texLoc, texBuffer, gl.ARRAY_BUFFER);
     gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 0, 0);
     
     var texture = createTexture();
 
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, Limage);
     
     gl.bindTexture(gl.TEXTURE_2D, null);
     
@@ -344,7 +374,12 @@ function render()
 //    }
 //--------------------------------------------Base line
 
-    
+    texLoc = gl.getUniformLocation(entityState.program, "u_image");
+    gl.uniform1i(texLoc, 2);
+    var bTexLoc = gl.getUniformLocation(entityState.program, "u_imageB");
+    gl.uniform1i(bTexLoc, 3);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, entityState.textureB);
     if(!texturesBound){
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, entityState.FB_texture);
@@ -355,8 +390,8 @@ function render()
     
     textureSwitch = !textureSwitch; 
     drawToOutput(gl.TRIANGLES, 0, 6);
-    requestAnimationFrame(render);
     texturesBound = !texturesBound;
+    requestAnimationFrame(render);
 }
 
 function bindFramebufferAndSetViewport(framebuffer, width, height)
@@ -465,3 +500,13 @@ function setupFramebuffer(fbo, width, height)
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.viewport(0,0, width, height);
 }
+
+
+function main(){
+    loadImages([
+        'http://localhost:8383/webGL%20Tutorial/cat.jpg',
+        'http://localhost:8383/webGL%20Tutorial/saber.png'
+    ], renderFunc);
+}
+
+main();

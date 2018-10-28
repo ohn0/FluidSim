@@ -39,15 +39,72 @@ and open the template in the editor.
             precision mediump float;
             varying vec2 v_FB_tex;
             uniform sampler2D u_FBimage;
+            vec2 bilerp(in vec2 a11, in vec2 a12, in vec2 a21, 
+                         in vec2 a22, in vec2 a);
             
             void main()
             {
 //                <!--gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex).xz , 0.0, 1.0);-->
-                vec4 fColor = texture2D(u_FBimage, v_FB_tex);
+                vec2 fPosB = vec2(v_FB_tex.x + .02, v_FB_tex.y +.03);
+                vec4 fColor = mix(
+                    texture2D(u_FBimage, v_FB_tex),
+                    texture2D(u_FBimage, fPosB),
+                    0.23
+                );
+//                11 = --
+//                22 = ++
 //                gl_FragColor =  vec4(texture2D(u_FBimage, v_FB_tex).xy, 0, 1.0);
-                gl_FragColor = vec4(mix(fColor.x, 0.5501, 0.1), fColor.yzw);
+//                gl_FragColor = vec4(mix(fColor.x, 0.5501, 0.1), fColor.yzw);
+                float d = 0.25;
+                vec2 vT = v_FB_tex;
+                vec2 a11 = (texture2D(u_FBimage, vec2(vT.x - d, vT.y - d))).xy;
+                vec2 a12 = (texture2D(u_FBimage, vec2(vT.x - d, vT.y + d))).xy;
+                vec2 a21 = (texture2D(u_FBimage, vec2(vT.x + d, vT.y - d))).xy;
+                vec2 a22 = (texture2D(u_FBimage, vec2(vT.x + d, vT.y + d))).xy;
+                vec2 a   = texture2D(u_FBimage, vT).xy;
+                float aB   = texture2D(u_FBimage, vT).z;
+
+                
+                vec2 result = bilerp(a11, a12, a21, a22, a);
+                gl_FragColor = vec4(result.xy, aB, 1.0);
 //                gl_FragColor = vec4(texture2D(u_FBimage, v_FB_tex));
+//                gl_FragColor = vec4(fColor);
             }
+            
+            vec2 bilerp(in vec2 a11,
+                         in vec2 a12,
+                         in vec2 a21,
+                         in vec2 a22,
+                         in vec2 a
+                         )
+            {
+                float frac1 = (a21.x - a.x)/(a21.x - a11.x);
+                vec2 a11Frac1 = frac1 * (vec2(texture2D(u_FBimage, a11).xy));
+                
+                float frac2 = (a.x - a11.x)/(a21.x - a11.x);
+                vec2 a21Frac2 = frac2 * (vec2(texture2D(u_FBimage, a21).xy));
+                
+                vec2 axy1 = a11Frac1 + a21Frac2;
+                
+                float frac3 = (a22.x - a.x)/(a22.x - a12.x);
+                vec2 a12Frac3 = frac3 * (vec2(texture2D(u_FBimage, a12).xy));
+
+                float frac4 = (a.x - a12.x)/(a22.x - a12.x);
+                vec2 a22Frac4 = frac4 * (vec2(texture2D(u_FBimage, a22).xy));
+                
+                vec2 axy2 = a12Frac3 + a22Frac4;
+                
+                float frac5 = (a12.y - a.y)/(a12.y - a11.y);
+                vec2 a01Frac5 = frac5 * (vec2(texture2D(u_FBimage, axy1).xy));
+                
+                float frac6 = (a.y - a12.y)/(a12.y - a11.y);
+                vec2 a02Frac6 = frac6 * (vec2(texture2D(u_FBimage,axy2).xy));
+                
+                return a01Frac5 + a02Frac6;
+            }
+
+            
+            
             
         </script>
         
@@ -85,10 +142,14 @@ and open the template in the editor.
             void main() 
             {
                 vec4 texColor = vec4(texture2D(u_image, v_tex));
+                vec4 texColorB = vec4(texture2D(u_imageB, v_tex));
+                
                 
 //                gl_FragColor = vec4(texture2D(u_image, v_tex).xy, 1.0, 1.0);
-                
-                gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, 1.0);
+//                gl_FragColor = texColor * texColorB;
+//                gl_FragColor = texColorB;
+                gl_FragColor = texColor;
+//                gl_FragColor = vec4(texColor.z, texColor.y, texColor.z, 1.0);
 
             }
             
