@@ -10,29 +10,6 @@ if(!gl){alert("webGL not initialized")};
 
 
 var images;
-//
-//// = [];
-//var image = new Image();
-//var image2 = new Image();
-//image.src= 'http://localhost:8383/webGL%20Tutorial/cat.jpg';
-//image2.src= 'http://localhost:8383/webGL%20Tutorial/saber.png';
-
-
-
-//
-//image.onload = function() 
-//{    
-//
-//    entityState = setup();
-//    pushBuffersToGPU(entityState);
-//    gl.viewport(0,0, gl.canvas.width, gl.canvas.height);
-//    requestAnimationFrame(b);
-//
-//};
-
-
-
-//var baselineRenderFunc = function()
 function baselineRenderFunc()
 {
     entityState = setup();
@@ -234,15 +211,42 @@ function pushBuffersToGPU(entityState)
     enableBind(entityState.FB_a_PosLoc, entityState.a_PosBuffer, gl.ARRAY_BUFFER);
     gl.vertexAttribPointer(entityState.FB_a_PosLoc, 2, gl.FLOAT, false, 0, 0);  
     
+    attachImages();
+//    attachFramebuffers();
+}
+
+function attachImages(){
     gl.useProgram(entityState.program);
     entityState.textureA = attachImageToTexture(images[0], entityState.a_TexLoc, entityState.a_TexBuffer);
     entityState.textureB = attachImageToTexture(images[1], entityState.b_TexLoc, entityState.a_TexBuffer);
     gl.useProgram(entityState.FBprogram);
     entityState.textureC = attachImageToTexture(images[1], entityState.FB_a_TexLoc, entityState.a_TexBuffer);
-    
-
-    
 }
+
+function attachFramebuffers()
+{
+    gl.useProgram(entityState.program);
+    enableBind(entityState.a_TexLoc, entityState.a_TexBuffer, gl.ARRAY_BUFFER);
+    gl.vertexAttribPointer(entityState.a_TexLoc, 2, gl.FLOAT, false, 0, 0);
+    var FB_load = createFramebuffer();
+    entityState.FB_A = FB_load[0];
+    entityState.textureA = FB_load[1];
+
+    enableBind(entityState.b_TexLoc, entityState.b_TexBuffer, gl.ARRAY_BUFFER);
+    gl.vertexAttribPointer(entityState.b_TexLoc, 2, gl.FLOAT, false, 0, 0);
+    FB_load = createFramebuffer();
+    entityState.FB_B = FB_load[0];
+    entityState.textureB = FB_load[1];
+    
+    gl.useProgram(entityState.FBprogram);
+    enableBind(entityState.FB_a_TexLoc, entityState.a_TexBuffer, gl.ARRAY_BUFFER);
+    gl.vertexAttribPointer(entityState.c_TexLoc, 2, gl.FLOAT, false, 0, 0);
+    FB_load = createFramebuffer();
+    entityState.FB_C = FB_load[0];
+    entityState.textureC = FB_load[1];
+}
+
+
 
 function attachImageToTexture(Limage, texLoc, texBuffer)
 {
@@ -334,7 +338,8 @@ function render()
         gl.activeTexture(gl.TEXTURE1);
         if(!useFB){
             useFB = !useFB;
-            gl.bindTexture(gl.TEXTURE_2D, entityState.textureA);
+            
+            gl.bindTexture(gl.TEXTURE_2D, entityState.FB_textureB);
         }
         else{
             gl.bindTexture(gl.TEXTURE_2D, entityState.FB_textureB);
@@ -445,8 +450,6 @@ function createTexture()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     return texture;
-    
-    
 }
 
 function createFrameBufferTexture(width, height)
@@ -474,7 +477,6 @@ function createFrameBufferTexture(width, height)
 function createFramebuffer()
 {
     var texture = createTexture(); 
-//    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.clientWidth, gl.canvas.clientHeight, 0, 
         gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -504,7 +506,7 @@ function setupFramebuffer(fbo, width, height)
 
 function main(){
     loadImages([
-        'http://localhost:8383/webGL%20Tutorial/cat.jpg',
+        'http://localhost:8383/webGL%20Tutorial/shiki.png',
         'http://localhost:8383/webGL%20Tutorial/saber.png'
     ], renderFunc);
 }
