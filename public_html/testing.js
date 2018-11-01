@@ -5,9 +5,18 @@ var gl = canvas.getContext("webgl");
 var entityState = {};
 var textureCounter = 0;
 var texturesBound = false;
+var mousePos = [.5, .5];
 
 if(!gl){alert("webGL not initialized")};
 
+canvas.addEventListener("click", function(e){
+    mousePos[0] = e.clientX/gl.canvas.width;
+    mousePos[1] = 1.0 - e.clientY/gl.canvas.height;
+//    console.log(mousePos);
+}, false);
+
+
+function getMousePos(){return mousePos;}
 
 var images;
 function baselineRenderFunc()
@@ -313,6 +322,9 @@ function render()
     var samplerID = "u_FBimage";
     var texture;
     var texLoc = gl.getUniformLocation(glProgram, samplerID);
+    var posLoc = gl.getUniformLocation(glProgram, "u_mousePos");
+    
+    
 
 //------------------------------------------base line
 //    if(!texturesBound){
@@ -322,8 +334,9 @@ function render()
 //    }
 //------------------------------------------base line
 
-
-
+    gl.uniform2f(posLoc, mousePos[0], mousePos[1]);
+//    gl.uniform2fv(posLoc, [0.5, 0.5]);
+    
     if(!texturesBound){
         gl.activeTexture(gl.TEXTURE0);
 //        gl.viewport(0,0, gl.canvas.clientWidth, gl.canvas.clientHeight);

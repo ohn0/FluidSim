@@ -27,10 +27,12 @@ and open the template in the editor.
             attribute vec2 a_FB_pos;
             attribute vec2 a_FB_tex;
              
-           varying vec2 v_FB_tex;
+            varying vec2 v_FB_tex;
+            varying vec2 v_FB_pos;
             void main()
             {
                 v_FB_tex = a_FB_tex;
+                v_FB_pos = a_FB_pos;
                 gl_Position = vec4(a_FB_pos, 1.0, 1.0);
             }
         </script>
@@ -38,7 +40,9 @@ and open the template in the editor.
         <script id="FB_FragmentShader" type="notjs">
             precision mediump float;
             varying vec2 v_FB_tex;
+            varying vec2 v_FB_pos;
             uniform sampler2D u_FBimage;
+            uniform vec2 u_mousePos; 
             vec2 bilerp(in vec2 a11, in vec2 a12, in vec2 a21, 
                          in vec2 a22, in vec2 a);
             vec2 advect();
@@ -63,17 +67,32 @@ and open the template in the editor.
                 vec2 a22 = (texture2D(u_FBimage, vec2(vT.x + d, vT.y + d))).xy;
                 vec2 a   = texture2D(u_FBimage, vT).xy;
                 float aB   = texture2D(u_FBimage, vT).z;
-
-                
 //                vec2 result = bilerp(a11, a12, a21, a22, a);
 //                vec2 result = advect();
-                gl_FragColor = vec4(0.22,0.17, 0.660, 1.0);
+//                gl_FragColor = vec4(u_mousePos.x, u_mousePos.y, 1.0,1.0);
+
+                vec2 advResult = advect();
+
+                if((abs(u_mousePos.x - v_FB_tex.x) < 0.01) &&
+                   (abs(u_mousePos.y - v_FB_tex.y) < 0.01)){
+                    vec4 res = vec4(mix(vec3(texture2D(u_FBimage, v_FB_tex)), 
+                        vec3(mix(u_mousePos, v_FB_tex, 0.33), 
+                        mix(u_mousePos.x, u_mousePos.y, 0.7))                   
+                    , 0.1), 1.0);
+                    
+                    gl_FragColor = vec4(advResult, 0.4, 1.0);
+                }
+                else{
+//                    gl_FragColor = mix(texture2D(u_FBimage, v_FB_tex),
+//                                       vec4(advResult, 0.0, 1.0), 0.011);;
+                    gl_FragColor = vec4(advResult, 0.0, 1.0);
+                }
             }
             
             vec2 advect()
             {
-                vec2 pos = v_FB_tex - vec2(texture2D(u_FBimage, v_FB_tex).xy);
-                float d = 0.001;
+                vec2 pos = abs(u_mousePos - vec2(texture2D(u_FBimage, v_FB_tex).xy));
+                float d = 0.1;
                 vec2 vT = pos;
                 vec2 a11 = (texture2D(u_FBimage, vec2(vT.x - d, vT.y - d))).xy;
                 vec2 a12 = (texture2D(u_FBimage, vec2(vT.x - d, vT.y + d))).xy;
@@ -104,7 +123,7 @@ and open the template in the editor.
                 vec2 vB = ((y - y1)/(y2-y1)) * bilinB;
   
                 return vA + vB;
-        
+         
 //                float frac1 = (a21.x - a.x)/(a21.x - a11.x);
 //                vec2 a11Frac1 = frac1 * (vec2(texture2D(u_FBimage, a11).xy));
 //                
